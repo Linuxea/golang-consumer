@@ -2,11 +2,12 @@ package main
 
 import (
 	"math/rand"
+	"reflect"
 )
 
 func NewconsumerManager() *consumerManager {
 	cm := &consumerManager{
-		consumers: make(map[string][]Consume),
+		consumers: make(map[string][]reflect.Value),
 		data:      make(chan interface{}, 1),
 	}
 
@@ -18,12 +19,12 @@ func NewconsumerManager() *consumerManager {
 }
 
 type consumerManager struct {
-	consumers map[string][]Consume
+	consumers map[string][]reflect.Value
 	data      chan interface{}
 }
 
-func (cm *consumerManager) registerConsumer(queue string, consume Consume) {
-	cm.consumers[queue] = append(cm.consumers[queue], consume)
+func (cm *consumerManager) registerConsumer(queue string, any interface{}) {
+	cm.consumers[queue] = append(cm.consumers[queue], reflect.ValueOf(any))
 }
 
 func (cm *consumerManager) loopWork() {
@@ -31,7 +32,9 @@ func (cm *consumerManager) loopWork() {
 	for d := range cm.data {
 		for _, v := range cm.consumers {
 			// 同组随机消费者
-			v[rand.Intn(len(v))].consume(d)
+			cs := v[rand.Intn(len(v))]
+			consumerMethod := cs.MethodByName("Consume")
+			consumerMethod.Call([]reflect.Value{reflect.ValueOf(d)})
 		}
 
 	}

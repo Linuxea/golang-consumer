@@ -8,28 +8,22 @@ import (
 type orderConsumer struct {
 }
 
-func (*orderConsumer) consume(data interface{}) {
-	if s, ok := data.(string); ok {
-		fmt.Println("老子订单处理器", s)
-	}
+func (*orderConsumer) Consume(data string) {
+	fmt.Println("老子订单处理器", data)
 }
 
 type order2Consumer struct {
 }
 
-func (*order2Consumer) consume(data interface{}) {
-	if s, ok := data.(string); ok {
-		fmt.Println("老子订单处理器2", s)
-	}
+func (*order2Consumer) Consume(data string) {
+	fmt.Println("老子订单处理器2", data)
 }
 
 type nothingConsumer struct {
 }
 
-func (*nothingConsumer) consume(data interface{}) {
-	if s, ok := data.(string); ok {
-		fmt.Println("老子无所事事", s)
-	}
+func (*nothingConsumer) Consume(data string) {
+	fmt.Println("老子无所事事", data)
 }
 
 type gift struct {
@@ -43,12 +37,8 @@ func (g *gift) send() {
 	fmt.Println(s)
 }
 
-func (g *gift) consume(data interface{}) {
-
-	d, ok := data.(gift)
-	if ok {
-		d.send()
-	}
+func (g *gift) Consume(data gift) {
+	data.send()
 }
 
 func TestConsumer(t *testing.T) {
@@ -57,10 +47,10 @@ func TestConsumer(t *testing.T) {
 	cm.registerConsumer("order", &orderConsumer{})
 	cm.registerConsumer("order", &order2Consumer{})
 	cm.registerConsumer("order2", &nothingConsumer{})
-	cm.registerConsumer("gift", &gift{})
+	// cm.registerConsumer("gift", &gift{})
 
 	cm.data <- "abcdefg"
-	cm.data <- gift{id: 1, name: "flower", num: 3}
+	// cm.data <- gift{id: 1, name: "flower", num: 3}
 
 	// never return
 	<-make(chan int)
